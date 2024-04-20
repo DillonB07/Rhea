@@ -98,6 +98,32 @@ def queue():
     }
 
 
+@music.route("/search_song/<string:query>")
+def search_song(query: str):
+    print_info(f"Attempting to search for {query}")
+    songs = subsonic.search_song(query, single=False)
+    if songs is None:
+        print_warn(f"Failed to search for {query}")
+        return abort(
+            404, "The song you are looking for could not be found on the server."
+        )
+    return {
+        "songs": [
+            {
+                "title": song.title,
+                "artist": song.artist,
+                "album": song.album,
+                "track": song.track,
+                "cover": song.cover,
+                "duration": song.duration,
+                "genre": song.genre,
+                "year": song.year,
+            }
+            for song in songs
+        ]
+    }
+
+
 @music.route("/now_playing")
 def now_playing():
     print_info("Attempting to get the current playing song")

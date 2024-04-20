@@ -16,4 +16,4 @@ def index():
 if __name__ == "__main__":
     music_queue = Thread(target=check_queue_and_play)
     music_queue.start()
-    app.run(debug=True, host="0.0.0.0")
+    app.run(host="0.0.0.0")
