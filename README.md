@@ -23,3 +23,9 @@ Here's what the folders do:
   user-specific application commands.
 - `slack` - A Slack bot to allow me to interact with the assistant through a Slack bot.
 - `voice` - A voice assistant created with Python that uses natural language to interact with Rhea.
+
+### Credits
+
+Some code has been taken from the following repositories and has been modified to fit Rhea's purpose.
+
+- [kutu-dev/disopy](https://github.com/kutu-dev/disopy)

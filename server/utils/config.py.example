@@ -1,0 +1,7 @@
+SUBSONIC_CONFIG = {
+    "subsonicUrl": "http://192.168.68.114:4533",
+    "user": {
+        "username": "rhea",
+        "password": "Rhea@123!",
+    },
+}

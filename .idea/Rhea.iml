@@ -6,6 +6,7 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
+      <excludeFolder url="file://$MODULE_DIR$/server.venv" />
       <excludeFolder url="file://$MODULE_DIR$/server/.venv/bin" />
       <excludeFolder url="file://$MODULE_DIR$/server/.venv/lib" />
     </content>
