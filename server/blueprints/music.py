@@ -79,6 +79,25 @@ def next_song():
         return abort(404, "No song is currently playing")
 
 
+@music.route("/queue")
+def queue():
+    return {
+        "queue": [
+            {
+                "title": song.title,
+                "artist": song.artist,
+                "album": song.album,
+                "track": song.track,
+                "cover": song.cover,
+                "duration": song.duration,
+                "genre": song.genre,
+                "year": song.year,
+            }
+            for song in music_queue
+        ]
+    }
+
+
 @music.route("/now_playing")
 def now_playing():
     print_info("Attempting to get the current playing song")
