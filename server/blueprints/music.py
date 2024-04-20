@@ -42,8 +42,8 @@ def index():
         return "Failed to connect to Subsonic server"
 
 
-@music.route("/play/<string:query>")
-def play(query: str):
+@music.route("/play_song/<string:query>")
+def play_song(query: str):
     print_info(f"Attempting to play {query}")
     song = subsonic.search_song(query)
     if song is None:
@@ -52,14 +52,31 @@ def play(query: str):
             404, "The song you are looking for could not be found on the server."
         )
     music_queue.append(song)
-    return f"Attempting to play {song.title} on {song.album} by {song.artist}"
+    return f"Added {song.title} by {song.artist} to the queue"
+
+
+@music.route("/play_album/<string:query>")
+def play_album(query: str):
+    print_info(f"Attempting to play {query}")
+    album = subsonic.search_album(query)
+    if album is None:
+        print_warn(f"Failed to play {query}")
+        return abort(
+            404, "The album you are looking for could not be found on the server."
+        )
+    music_queue.extend(album.songs)
+    return f"Added songs from {album.title} by {album.artist} to the queue"
 
 
 @music.route("/next")
-def next():
-    print_info("Attempting to skip the current song")
-    media_player.stop()
-    return "Skipped the current song"
+def next_song():
+    if media_player.is_playing():
+        print_info("Skipping the current song")
+        media_player.stop()
+        return "Skipped the current song"
+    else:
+        print_warn("No song is currently playing")
+        return abort(404, "No song is currently playing")
 
 
 @music.route("/now_playing")
@@ -98,6 +115,9 @@ def check_queue_and_play():
             media_player.play()
             subsonic.scrobble(current_song.id, False)
             scrobbled = False
+            print_info(
+                f"Now playing {current_song.title} | {current_song.artist} | {current_song.album}"
+            )
         elif (
             media_player.is_playing()
             and (current_time / length) > 0.5

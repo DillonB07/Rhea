@@ -20,12 +20,22 @@ class Song:
     artist: str
     album: str
     cover: str
-    duration: int
+    duration: str
     track: str
     year: str
     genre: str
     id: str
 
+@dataclass()
+class Album:
+    """Album model"""
+
+    title: str
+    artist: str
+    cover: str
+    songs: list[Song]
+    year: str
+    genre: str
 
 class Subsonic:
     def __init__(self) -> None:
@@ -90,7 +100,7 @@ class Subsonic:
             cover=self.build_url(
                 "/getCoverArt", {**self.params, "id": atrib.get("coverArt")}
             ),
-            duration=int(atrib.get("duration")),
+            duration=atrib.get("duration"),
             genre=atrib.get("genre"),
             id=atrib.get("id"),
         )
@@ -111,16 +121,26 @@ class Subsonic:
             self.error("Requested ping returned an unexpected status value")
             return False
 
-    def get_album(self, id: str) -> list[Song]:
-        """Generates a list of Songs"""
+    def get_album(self, id: str) -> Album:
+        """Generates an Album model"""
 
         album_data: ET.Element = self.xml_request(
             "/getAlbum", {**self.params, "id": id}
         )[0]
 
         album_songs: list[Song] = [self.build_song(song.attrib) for song in album_data]
+        album = Album(
+            title=album_data.attrib["name"],
+            artist=album_data.attrib["artist"],
+            cover=self.build_url(
+                "/getCoverArt", {**self.params, "id": album_data.attrib["coverArt"]}
+            ),
+            songs=album_songs,
+            year=album_data.attrib["year"],
+            genre=album_data.attrib["genre"],
+        )
 
-        return album_songs
+        return album
 
     def search_song(self, query: str) -> Song | None:
         """Search a song with a query and generates a Song model with the first result or None if
@@ -151,9 +171,8 @@ class Subsonic:
 
         return song
 
-    def search_album(self, query: str) -> list[Song] | None:
-        """Search an album with a query and returns a list of Song models with all the songs in
-        the album or None is no album is found"""
+    def search_album(self, query: str) -> Album | None:
+        """Search an album with a query and returns an Album model or None is no album is found"""
 
         self.info(f'Searching an album with the query "{query}"')
 
@@ -173,7 +192,7 @@ class Subsonic:
             return None
 
         first_album_result_id: str = only_albums_results[0].attrib["id"]
-        self.info(f'Matched the album "{only_albums_results[0].attrib["title"]}"')
+        self.info(f'Matched the album "{only_albums_results[0].attrib["name"]}"')
 
         return self.get_album(first_album_result_id)
 
@@ -218,7 +237,7 @@ class Subsonic:
         now_playing: ET.Element = self.xml_request("/getNowPlaying", self.params)[0]
 
         if len(now_playing) == 0:
-            self.warn("No song is currently playing")
+            self.warn("No song currently playing")
             return None
 
         song: Song = self.build_song(now_playing[0].attrib)
@@ -230,7 +249,7 @@ class Subsonic:
     def scrobble(self, id: str, submission: bool) -> None:
         """Scrobble a song by its ID"""
 
-        self.info(f'Scrobbling the song with the ID "{id}"')
+        self.info(f'Scrobbling song with ID "{id}"')
 
         self.xml_request(
             "/scrobble", {**self.params, "id": id, "submission": submission}
