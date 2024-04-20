@@ -59,8 +59,7 @@ class Subsonic:
         """
 
         r: requests.Response = requests.get(
-            url=self.url + "/rest" + subroute,
-            params=params,
+            url=f"{self.url}/rest{subroute}", params=params
         )
 
         return ET.fromstring(r.text)
@@ -119,15 +118,13 @@ class Subsonic:
             "/getAlbum", {**self.params, "id": id}
         )[0]
 
-        album_songs: list[Song] = []
-
-        for song in album_data:
-            album_songs.append(self.build_song(song.attrib))
+        album_songs: list[Song] = [self.build_song(song.attrib) for song in album_data]
 
         return album_songs
 
     def search_song(self, query: str) -> Song | None:
-        """Search a song with a query and generates a Song model with the first result or None if no one is found"""
+        """Search a song with a query and generates a Song model with the first result or None if
+        no one is found"""
 
         self.info(f'Searching a song with the query "{query}"')
 
@@ -142,8 +139,8 @@ class Subsonic:
         ]
 
         # Return None if no song is found
-        if len(only_songs_results) == 0:
-            self.warn(f"No song has been matched")
+        if not only_songs_results:
+            self.warn("No song has been matched")
             return None
 
         first_song_result_metadata = only_songs_results[0].attrib
@@ -155,7 +152,8 @@ class Subsonic:
         return song
 
     def search_album(self, query: str) -> list[Song] | None:
-        """Search an album with a query and returns a list of Song models with all the songs in the album or None is no album is found"""
+        """Search an album with a query and returns a list of Song models with all the songs in
+        the album or None is no album is found"""
 
         self.info(f'Searching an album with the query "{query}"')
 
@@ -170,8 +168,8 @@ class Subsonic:
         ]
 
         # Return None if no album is found
-        if len(only_albums_results) == 0:
-            self.warn(f"No album has been matched")
+        if not only_albums_results:
+            self.warn("No album has been matched")
             return None
 
         first_album_result_id: str = only_albums_results[0].attrib["id"]
@@ -180,7 +178,8 @@ class Subsonic:
         return self.get_album(first_album_result_id)
 
     def search_playlist(self, query: str) -> list[Song] | None:
-        """Search an playlist with a query and returns a list of Song models with all the songs in the album or None is no playlist is found"""
+        """Search a playlist with a query and returns a list of Song models with all the songs
+        in the album or None is no playlist is found"""
 
         self.info(f'Searching a playlist with the query "{query}"')
         playlists_list: ET.Element = self.xml_request("/getPlaylists", self.params)[0]
@@ -191,8 +190,8 @@ class Subsonic:
                 matched_playlist = playlist_element.attrib
                 break
 
-        if matched_playlist["id"] == None:
-            self.warn(f"No playlist has been matched")
+        if matched_playlist["id"] is None:
+            self.warn("No playlist has been matched")
             return None
 
         playlist: ET.Element = self.xml_request(
@@ -236,5 +235,3 @@ class Subsonic:
         self.xml_request(
             "/scrobble", {**self.params, "id": id, "submission": submission}
         )
-
-        self.info(f'Scrobble the song with the ID "{id}"')

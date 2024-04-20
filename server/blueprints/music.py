@@ -1,4 +1,4 @@
-# from queue  import Queue
+import random
 import time
 
 import vlc
@@ -9,7 +9,6 @@ from utils.subsonic import Subsonic
 
 music = Blueprint("music", __name__)
 
-# queue: Queue = Queue()
 subsonic: Subsonic = Subsonic()
 music_queue = []
 current_song = None
@@ -107,5 +106,8 @@ def check_queue_and_play():
             subsonic.scrobble(current_song.id, True)
             scrobbled = True
         else:
-            # Sleep for a second to avoid busy waiting
-            time.sleep(1)
+            # Dynamically adjust sleep interval based on system load or other conditions.
+            # We are sleeping because we do not want to constantly check the play status,
+            # but we also do not want to wait too long to play the next song.
+            sleep_interval = random.uniform(0.5, 1.5)
+            time.sleep(sleep_interval)
