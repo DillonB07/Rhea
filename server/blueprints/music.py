@@ -68,6 +68,19 @@ def play_album(query: str):
     return f"Added songs from {album.title} by {album.artist} to the queue"
 
 
+@music.route("/play_song_by_id/<string:id>")
+def play_song_by_id(id: str):
+    print_info(f"Attempting to play song with id {id}")
+    song = subsonic.get_song(id)
+    if song is None:
+        print_warn(f"Failed to play song with id {id}")
+        return abort(
+            404, "The song you are looking for could not be found on the server."
+        )
+    music_queue.append(song)
+    return f"Added {song.title} by {song.artist} to the queue"
+
+
 @music.route("/next")
 def next_song():
     if media_player.is_playing():
@@ -92,6 +105,7 @@ def queue():
                 "duration": song.duration,
                 "genre": song.genre,
                 "year": song.year,
+                "id": song.id,
             }
             for song in music_queue
         ]
@@ -118,6 +132,7 @@ def search_song(query: str):
                 "duration": song.duration,
                 "genre": song.genre,
                 "year": song.year,
+                "id": song.id,
             }
             for song in songs
         ]

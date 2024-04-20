@@ -141,6 +141,17 @@ class Subsonic:
         )
 
         return album
+    
+    def get_song(self, id: str) -> Song:
+        """Generates a Song model by its ID"""
+
+        song_data: ET.Element = self.xml_request(
+            "/getSong", {**self.params, "id": id}
+        )[0]
+
+        song = self.build_song(song_data.attrib)
+
+        return song
 
     def search_song(self, query: str, single: bool = True) -> Song | None:
         """Search a song with a query and generates a Song model with the first result or None if
