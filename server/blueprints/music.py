@@ -87,13 +87,25 @@ def check_queue_and_play():
     global media_player
     global music_queue
     global current_song
+    scrobbled = False
 
     while True:
+        length = media_player.get_length() / 1000
+        current_time = media_player.get_time() / 1000
         if not media_player.is_playing() and len(music_queue) > 0:
             current_song = music_queue.pop(0)
             media = player.media_new(current_song.stream_url)
             media_player.set_media(media)
             media_player.play()
+            subsonic.scrobble(current_song.id, False)
+            scrobbled = False
+        elif (
+            media_player.is_playing()
+            and (current_time / length) > 0.5
+            and not scrobbled
+        ):
+            subsonic.scrobble(current_song.id, True)
+            scrobbled = True
         else:
             # Sleep for a second to avoid busy waiting
             time.sleep(1)

@@ -24,7 +24,8 @@ class Song:
     track: str
     year: str
     genre: str
-    id: str 
+    id: str
+
 
 class Subsonic:
     def __init__(self) -> None:
@@ -74,22 +75,26 @@ class Subsonic:
         return f"{self.url}/rest{subroute}?{urllib.parse.urlencode(params)}"
 
     def build_song(self, atrib: dict[str, str]) -> Song:
-        stream_url: str = self.build_url("/stream", {**self.params, "id": atrib.get("id")})
+        stream_url: str = self.build_url(
+            "/stream", {**self.params, "id": atrib.get("id")}
+        )
 
         self.info(f'Building song "{atrib.get("title")}" - {atrib}')
         # Make a model of only the necessary data of the song
-        return Song(title=atrib.get("title"),
-                    stream_url=stream_url,
-                    artist=atrib.get("artist"),
-                    album=atrib.get("album"),
-                    track=atrib.get("track"),
-                    year=atrib.get("year"),
-                    cover=self.build_url("/getCoverArt", {**self.params, 
-                                                          "id": atrib.get("coverArt")}),
-                    duration=int(atrib.get("duration")),
-                    genre=atrib.get("genre"),
-                    id=atrib.get("id")
-                    )
+        return Song(
+            title=atrib.get("title"),
+            stream_url=stream_url,
+            artist=atrib.get("artist"),
+            album=atrib.get("album"),
+            track=atrib.get("track"),
+            year=atrib.get("year"),
+            cover=self.build_url(
+                "/getCoverArt", {**self.params, "id": atrib.get("coverArt")}
+            ),
+            duration=int(atrib.get("duration")),
+            genre=atrib.get("genre"),
+            id=atrib.get("id"),
+        )
 
     def ping(self) -> bool:
         """Test if the server is only and return true only if the status is ok."""
@@ -222,5 +227,14 @@ class Subsonic:
         self.info(f'Now playing "{song.title}"')
 
         return song
-    
-    
+
+    def scrobble(self, id: str, submission: bool) -> None:
+        """Scrobble a song by its ID"""
+
+        self.info(f'Scrobbling the song with the ID "{id}"')
+
+        self.xml_request(
+            "/scrobble", {**self.params, "id": id, "submission": submission}
+        )
+
+        self.info(f'Scrobble the song with the ID "{id}"')
