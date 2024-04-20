@@ -56,6 +56,13 @@ def play(query: str):
     return f"Attempting to play {song.title} on {song.album} by {song.artist}"
 
 
+@music.route("/next")
+def next():
+    print_info("Attempting to skip the current song")
+    media_player.stop()
+    return "Skipped the current song"
+
+
 @music.route("/now_playing")
 def now_playing():
     print_info("Attempting to get the current playing song")
