@@ -111,6 +111,12 @@ def clear():
     return "Cleared the queue"
 
 
+@play.route("/toggle_playback")
+def toggle_playback():
+    out = media_player.pause()
+    return f"Paused the current song {out}"
+
+
 def check_queue_and_play():
     global media_player
     global music_queue
@@ -120,7 +126,11 @@ def check_queue_and_play():
     while True:
         length = media_player.get_length() / 1000
         current_time = media_player.get_time() / 1000
-        if not media_player.is_playing() and len(music_queue) > 0:
+        if (
+            not media_player.is_playing()
+            and len(music_queue) > 0
+            and media_player.get_state() != vlc.State.Paused
+        ):
             current_song = music_queue.pop(0)
             media = player.media_new(current_song.stream_url)
             media_player.set_media(media)
