@@ -1,6 +1,6 @@
 import urllib
 import xml.etree.ElementTree as ET
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Callable
 
 import requests
@@ -31,12 +31,22 @@ class Song:
 class Album:
     """Album model"""
 
+    id: str
     title: str
     artist: str
     cover: str
-    songs: list[Song]
     year: str
     genre: str
+    songs: list[Song] = field(default_factory=list)
+
+
+@dataclass()
+class Artist:
+    """Artist model"""
+
+    id: str
+    name: str
+    albums: list[Album]
 
 
 class Subsonic:
@@ -85,26 +95,49 @@ class Subsonic:
 
         return f"{self.url}/rest{subroute}?{urllib.parse.urlencode(params)}"
 
-    def build_song(self, atrib: dict[str, str]) -> Song:
+    def build_song(self, attrib: dict[str, str]) -> Song:
         stream_url: str = self.build_url(
-            "/stream", {**self.params, "id": atrib.get("id")}
+            "/stream", {**self.params, "id": attrib.get("id")}
         )
 
-        self.info(f'Building song "{atrib.get("title")}" - {atrib}')
         # Make a model of only the necessary data of the song
         return Song(
-            title=atrib.get("title"),
+            title=attrib.get("title"),
             stream_url=stream_url,
-            artist=atrib.get("artist"),
-            album=atrib.get("album"),
-            track=atrib.get("track"),
-            year=atrib.get("year"),
+            artist=attrib.get("artist"),
+            album=attrib.get("album"),
+            track=attrib.get("track"),
+            year=attrib.get("year"),
             cover=self.build_url(
-                "/getCoverArt", {**self.params, "id": atrib.get("coverArt")}
+                "/getCoverArt", {**self.params, "id": attrib.get("coverArt")}
             ),
-            duration=atrib.get("duration"),
-            genre=atrib.get("genre"),
-            id=atrib.get("id"),
+            duration=attrib.get("duration"),
+            genre=attrib.get("genre"),
+            id=attrib.get("id"),
+        )
+
+    def build_artist(self, attrib: dict[str, str], albums: list[dict]) -> Artist:
+        return Artist(
+            id=attrib.get("id"),
+            name=attrib.get("name"),
+            albums=[self.build_album(album) for album in albums],
+        )
+
+    def build_album(self, attrib: dict[str, str]) -> Album:
+        return Album(
+            id=attrib.get("id"),
+            title=attrib.get("title"),
+            artist=attrib.get("artist"),
+            cover=self.build_url(
+                "/getCoverArt", {**self.params, "id": attrib.get("coverArt")}
+            ),
+            year=attrib.get("year"),
+            genre=attrib.get("genre"),
+            songs=(
+                [self.build_song(song) for song in attrib.get("songs")]
+                if attrib.get("songs")
+                else []
+            ),
         )
 
     def ping(self) -> bool:
@@ -131,7 +164,9 @@ class Subsonic:
         )[0]
 
         album_songs: list[Song] = [self.build_song(song.attrib) for song in album_data]
+
         album = Album(
+            id=album_data.attrib["id"],
             title=album_data.attrib["name"],
             artist=album_data.attrib["artist"],
             cover=self.build_url(
@@ -154,6 +189,21 @@ class Subsonic:
         song = self.build_song(song_data.attrib)
 
         return song
+
+    def get_artist(self, id: str) -> Artist:
+        """Generates an Artist model by its ID"""
+
+        artist_data: ET.Element = self.xml_request(
+            "/getArtist", {**self.params, "id": id}
+        )[0]
+
+        ns = {"ns0": "http://subsonic.org/restapi"}
+        album_elems = artist_data.findall("ns0:album", ns)
+        albums = [album.attrib for album in album_elems]
+
+        artist = self.build_artist(artist_data, albums)
+
+        return artist
 
     def search_song(self, query: str, single: bool = True) -> Song | None:
         """Search a song with a query and generates a Song model with the first result or None if
@@ -215,6 +265,33 @@ class Subsonic:
         self.info(f'Matched the album "{only_albums_results[0].attrib["name"]}"')
 
         return self.get_album(first_album_result_id)
+
+    def search_artist(self, query: str) -> list[Artist] | None:
+        """Search an artist with a query and returns a list of Artist models or None is no artist
+        is found"""
+
+        self.info(f'Searching an artist with the query "{query}"')
+
+        search_results: ET.Element = self.xml_request(
+            "/search3", {**self.params, "query": query}
+        )[0]
+
+        only_artists_results: list[ET.Element] = [
+            result
+            for result in search_results
+            if result.tag == "{http://subsonic.org/restapi}artist"
+        ]
+
+        # Return None if no artist is found
+        if not only_artists_results:
+            self.warn("No artist has been matched")
+            return None
+
+        # search for albums by artists
+        artists: list[Artist] = [
+            self.get_artist(artist.attrib["id"]) for artist in (only_artists_results)
+        ]
+        return artists
 
     def search_playlist(self, query: str) -> list[Song] | None:
         """Search a playlist with a query and returns a list of Song models with all the songs
