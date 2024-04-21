@@ -104,6 +104,13 @@ def shuffle():
     return "Shuffled the queue"
 
 
+@play.route("/clear")
+def clear():
+    logger.info("Cleared the queue")
+    music_queue.clear()
+    return "Cleared the queue"
+
+
 def check_queue_and_play():
     global media_player
     global music_queue
