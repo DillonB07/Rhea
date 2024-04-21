@@ -1,6 +1,3 @@
-import random
-import time
-
 import vlc
 from flask import Blueprint, abort
 
@@ -33,13 +30,7 @@ def before_request():
 
 @music.route("/")
 def index():
-    print_info("Attempting to connect to Subsonic server")
-    if subsonic.ping():
-        print_info("Connected to Subsonic server")
-        return "Connected to Subsonic server"
-    else:
-        print_warn("Failed to connect to Subsonic server")
-        return "Failed to connect to Subsonic server"
+    return "Connected to Subsonic server"
 
 
 @music.route("/play_song/<string:query>")
@@ -107,7 +98,7 @@ def queue():
                 "year": song.year,
                 "id": song.id,
             }
-            for song in music_queue
+            for song in music_queue[:50]
         ]
     }
 
@@ -134,7 +125,7 @@ def search_song(query: str):
                 "year": song.year,
                 "id": song.id,
             }
-            for song in songs
+            for song in songs[:50]
         ]
     }
 
@@ -185,9 +176,3 @@ def check_queue_and_play():
         ):
             subsonic.scrobble(current_song.id, True)
             scrobbled = True
-        else:
-            # Dynamically adjust sleep interval based on system load or other conditions.
-            # We are sleeping because we do not want to constantly check the play status,
-            # but we also do not want to wait too long to play the next song.
-            sleep_interval = random.uniform(0.5, 1.5)
-            time.sleep(sleep_interval)

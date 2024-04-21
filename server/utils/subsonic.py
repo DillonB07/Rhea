@@ -26,6 +26,7 @@ class Song:
     genre: str
     id: str
 
+
 @dataclass()
 class Album:
     """Album model"""
@@ -36,6 +37,7 @@ class Album:
     songs: list[Song]
     year: str
     genre: str
+
 
 class Subsonic:
     def __init__(self) -> None:
@@ -141,13 +143,13 @@ class Subsonic:
         )
 
         return album
-    
+
     def get_song(self, id: str) -> Song:
         """Generates a Song model by its ID"""
 
-        song_data: ET.Element = self.xml_request(
-            "/getSong", {**self.params, "id": id}
-        )[0]
+        song_data: ET.Element = self.xml_request("/getSong", {**self.params, "id": id})[
+            0
+        ]
 
         song = self.build_song(song_data.attrib)
 
@@ -176,17 +178,17 @@ class Subsonic:
 
         if single:
             first_song_result_metadata = only_songs_results[0].attrib
-    
+
             # Make a model of only the necessary data of the song
             song: Song = self.build_song(first_song_result_metadata)
             self.info(f'Matched the song "{song.title}"')
-    
+
             return song
         else:
             songs: list[Song] = [
                 self.build_song(song.attrib) for song in only_songs_results
             ]
-            self.info(f'Matched {len(songs)} songs')
+            self.info(f"Matched {len(songs)} songs")
             return songs
 
     def search_album(self, query: str) -> Album | None:
