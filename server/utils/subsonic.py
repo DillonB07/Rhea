@@ -205,7 +205,7 @@ class Subsonic:
 
         return artist
 
-    def search_song(self, query: str, single: bool = True) -> Song | None:
+    def search_song(self, query: str, single: bool = True) -> list[Song] | Song | None:
         """Search a song with a query and generates a Song model with the first result or None if
         no one is found"""
 
@@ -241,8 +241,9 @@ class Subsonic:
             self.info(f"Matched {len(songs)} songs")
             return songs
 
-    def search_album(self, query: str) -> Album | None:
-        """Search an album with a query and returns an Album model or None is no album is found"""
+    def search_album(self, query: str, single: bool = True) -> list[Album] | Album | None:
+        """Search an album with a query and returns a list of Album models or None is no album is 
+        found"""
 
         self.info(f'Searching an album with the query "{query}"')
 
@@ -260,11 +261,20 @@ class Subsonic:
         if not only_albums_results:
             self.warn("No album has been matched")
             return None
+        
+        if single:
+            first_album_result_metadata = only_albums_results[0].attrib
 
-        first_album_result_id: str = only_albums_results[0].attrib["id"]
+            # Make a model of only the necessary data of the album
+            album: Album = self.build_album(first_album_result_metadata)
+            self.info(f'Matched the album "{album.title}"')
+
+            return album
+
         self.info(f'Matched the album "{only_albums_results[0].attrib["name"]}"')
+        albums = [self.get_album(album.attrib["id"]) for album in only_albums_results]
 
-        return self.get_album(first_album_result_id)
+        return albums
 
     def search_artist(self, query: str) -> list[Artist] | None:
         """Search an artist with a query and returns a list of Artist models or None is no artist
