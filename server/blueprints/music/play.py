@@ -1,3 +1,6 @@
+import random
+import time
+
 import vlc
 from flask import Blueprint, abort
 
@@ -92,6 +95,13 @@ def queue():
             for song in music_queue[:50]
         ]
     }
+
+
+@play.route("/shuffle")
+def shuffle():
+    logger.info("Shuffling the queue")
+    random.shuffle(music_queue)
+    return "Shuffled the queue"
 
 
 def check_queue_and_play():
