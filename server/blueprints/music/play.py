@@ -2,7 +2,7 @@ import random
 import time
 
 import vlc
-from flask import Blueprint, abort
+from flask import Blueprint, abort, request
 
 from . import subsonic, logger
 
@@ -12,6 +12,7 @@ music_queue = []
 current_song = None
 player = vlc.Instance()
 media_player = player.media_player_new()
+media_player.audio_set_volume(50)
 
 
 @play.route("/song/query/<string:query>")
@@ -115,6 +116,24 @@ def clear():
 def toggle_playback():
     out = media_player.pause()
     return f"Paused the current song {out}"
+
+
+@play.route("/volume")
+def volume():
+    # Volume should ideally be changed via the hosts volume control. Whilst this does work,
+    # it is not recommended to be used as it can significantly decrease the quality of the audio.
+    change = int(request.args.get("amount", 0))
+    set = request.args.get("set", False)
+    if change != 0:
+        new_volume = media_player.audio_get_volume() + change if not set else change
+        if new_volume > 200:
+            new_volume = 200
+        elif new_volume < 0:
+            new_volume = 0
+        media_player.audio_set_volume(new_volume)
+        return f"Volume is now {new_volume}"
+
+    return f"Volume is {media_player.audio_get_volume()}"
 
 
 def check_queue_and_play():
