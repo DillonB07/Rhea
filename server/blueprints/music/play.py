@@ -19,33 +19,35 @@ media_player.audio_set_volume(50)
 def play_song(query: str):
     logger.info(f"Attempting to play {query}")
     song = subsonic.search_song(query)
-    if song is None:
+    if not song:
         logger.warn(f"Failed to play {query}")
         return abort(
             404, "The song you are looking for could not be found on the server."
         )
-    music_queue.append(song)
-    return f"Added {song.title} by {song.artist} to the queue"
+    s = song[0]
+    music_queue.append(s)
+    return f"Added {s.title} by {s.artist} to the queue"
 
 
 @play.route("/song/id/<string:id>")
 def play_song_by_id(id: str):
     logger.info(f"Attempting to play song with id {id}")
     song = subsonic.get_song(id)
-    if song is None:
+    if not song:
         logger.warn(f"Failed to play song with id {id}")
         return abort(
             404, "The song you are looking for could not be found on the server."
         )
-    music_queue.append(song)
-    return f"Added {song.title} by {song.artist} to the queue"
+    s = song[0]
+    music_queue.append(s)
+    return f"Added {s.title} by {s.artist} to the queue"
 
 
 @play.route("/album/query/<string:query>")
 def play_album(query: str):
     logger.info(f"Attempting to play {query}")
     album = subsonic.search_album(query)
-    if album is None:
+    if not album:
         logger.warn(f"Failed to play {query}")
         return abort(
             404, "The album you are looking for could not be found on the server."
@@ -58,7 +60,7 @@ def play_album(query: str):
 def play_album_by_id(id: str):
     logger.info(f"Attempting to play album with id {id}")
     album = subsonic.get_album(id)
-    if album is None:
+    if not album:
         logger.warn(f"Failed to play album with id {id}")
         return abort(
             404, "The album you are looking for could not be found on the server."

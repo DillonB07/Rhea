@@ -205,9 +205,7 @@ class Subsonic:
 
         return artist
 
-    def search_song(
-        self, query: str, single: bool = True
-    ) -> list[Song] | None:
+    def search_song(self, query: str, single: bool = True) -> list[Song] | None:
         """Search a song with a query and generates a Song model with the first result or None if
         no one is found"""
 
