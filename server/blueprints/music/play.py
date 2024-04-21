@@ -50,6 +50,19 @@ def play_album(query: str):
     return f"Added songs from {album.title} by {album.artist} to the queue"
 
 
+@play.route("/album/id/<string:id>")
+def play_album_by_id(id: str):
+    logger.info(f"Attempting to play album with id {id}")
+    album = subsonic.get_album(id)
+    if album is None:
+        logger.warn(f"Failed to play album with id {id}")
+        return abort(
+            404, "The album you are looking for could not be found on the server."
+        )
+    music_queue.extend(album.songs)
+    return f"Added songs from {album.title} by {album.artist} to the queue"
+
+
 @play.route("/next")
 def next_song():
     if media_player.is_playing():
@@ -107,3 +120,5 @@ def check_queue_and_play():
         ):
             subsonic.scrobble(current_song.id, True)
             scrobbled = True
+        else:
+            time.sleep(1)
