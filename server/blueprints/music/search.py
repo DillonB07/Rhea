@@ -34,7 +34,7 @@ def search_query():
                         "year": song.year,
                         "id": song.id,
                     }
-                    for song in songs
+                    for song in (songs if songs is not None else [])
                 ]
             }
         case "album":
@@ -53,7 +53,7 @@ def search_query():
                         "cover": album.cover,
                         "id": album.id,
                     }
-                    for album in albums
+                    for album in (albums if albums is not None else [])
                 ]
             }
 
@@ -72,7 +72,7 @@ def search_query():
                         "id": artist.id,
                         "albums": artist.albums,
                     }
-                    for artist in artists
+                    for artist in (artists if artists is not None else [])
                 ]
             }
         case _:
@@ -92,7 +92,7 @@ def search_query():
                         "year": song.year,
                         "id": song.id,
                     }
-                    for song in songs
+                    for song in (songs if songs is not None else [])
                 ],
                 "albums": [
                     {
@@ -101,7 +101,7 @@ def search_query():
                         "cover": album.cover,
                         "id": album.id,
                     }
-                    for album in albums
+                    for album in (albums if albums is not None else [])
                 ],
                 "artists": [
                     {
@@ -109,7 +109,7 @@ def search_query():
                         "id": artist.id,
                         "albums": artist.albums,
                     }
-                    for artist in artists
+                    for artist in (artists if artists is not None else [])
                 ],
             }
 
@@ -133,6 +133,6 @@ def get_artist(id: str):
                 "cover": album.cover,
                 "id": album.id,
             }
-            for album in artist.albums
+            for album in (artist.albums if artist.albums is not None else [])
         ],
     }
