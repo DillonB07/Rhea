@@ -11,6 +11,15 @@ music.register_blueprint(search_blueprint, url_prefix="/search")
 
 @music.before_request
 def before_request():
+    """
+    Checks if the Subsonic server is reachable before each request
+    ---
+    tags:
+     - subsonic
+    responses:
+      503:
+        description: Failed to connect to Subsonic server
+    """
     try:
         logger.info("Attempting to connect to Subsonic server")
         if not subsonic.ping():
@@ -21,16 +30,59 @@ def before_request():
     except Exception:  # noqa
         # We use a broad exception as there are a variety of Connection* errors that can be raised
         logger.warn("Failed to connect to Subsonic server")
-        return abort(500, "Failed to connect to Subsonic server")
+        return abort(503, "Failed to connect to Subsonic server")
 
 
-@music.route("/")
+@music.route("/", methods=["GET"])
 def index():
+    """
+    Checks if the Subsonic server is reachable
+    ---
+    tags:
+     - subsonic
+    responses:
+      200:
+        description: Connected to Subsonic server
+      503:
+        description: Failed to connect to Subsonic server
+    """
     return "Connected to Subsonic server"
 
 
-@music.route("/now_playing")
+@music.route("/now_playing", methods=["GET"])
 def now_playing():
+    """
+    Gets the current playing song
+    ---
+    tags:
+     - subsonic
+    responses:
+        200:
+            description: The current playing song
+            content:
+            application/json:
+                schema:
+                type: object
+                properties:
+                    title:
+                    type: string
+                    artist:
+                    type: string
+                    album:
+                    type: string
+                    track:
+                    type: string
+                    cover:
+                    type: string
+                    duration:
+                    type: integer
+                    genre:
+                    type: string
+                    year:
+                    type: string
+        404:
+            description: No song is currently playing
+    """
     logger.info("Attempting to get the current playing song")
     song = subsonic.get_now_playing()
     if song is None:

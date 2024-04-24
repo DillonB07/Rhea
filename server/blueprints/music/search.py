@@ -5,8 +5,99 @@ from . import logger, subsonic
 search = Blueprint("search", __name__)
 
 
-@search.route("/")
+@search.route("/", methods=["GET"])
 def search_query():
+    """
+    Search for a song, album, or artist on the server
+    ---
+    tags:
+      - subsonic
+    parameters:
+      - name: query
+        in: query
+        type: string
+        required: true
+        description: The query to search for
+      - name: type
+        in: query
+        type: string
+        required: false
+        description: The type of search to perform (song, album, artist, all)
+    responses:
+      200:
+        description: The search results
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                songs:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      title:
+                        type: string
+                      artist:
+                        type: string
+                      album:
+                        type: string
+                      track:
+                        type: string
+                      cover:
+                        type: string
+                      duration:
+                        type: string
+                      genre:
+                        type: string
+                      year:
+                        type: string
+                      id:
+                        type: string
+                albums:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      title:
+                        type: string
+                      artist:
+                        type: string
+                      cover:
+                        type: string
+                      id:
+                        type: string
+                      year:
+                        type: string
+                      genre:
+                        type: string
+                artists:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      id:
+                        type: string
+                      albums:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            title:
+                              type: string
+                            cover:
+                              type: string
+                            id:
+                              type: string
+                            year:
+                              type: string
+                            genre:
+                              type: string
+      404:
+        description: The song, album, or artist could not be found
+    """
     query = request.args.get("query")
     type = request.args.get("type", "all")
     if query is None:
@@ -57,7 +148,7 @@ def search_query():
                 ]
             }
 
-        case "artists":
+        case "artist":
             artists = subsonic.search_artist(query)
             if artists is None:
                 logger.warn(f"Failed to search for {query}")
@@ -70,7 +161,16 @@ def search_query():
                     {
                         "name": artist.name,
                         "id": artist.id,
-                        "albums": artist.albums,
+                        "albums": [
+                            {
+                                "title": album.title,
+                                "cover": album.cover,
+                                "id": album.id,
+                                "year": album.year,
+                                "genre": album.genre,
+                            }
+                            for album in artist.albums
+                        ],
                     }
                     for artist in (artists if artists is not None else [])
                 ]
@@ -100,6 +200,8 @@ def search_query():
                         "artist": album.artist,
                         "cover": album.cover,
                         "id": album.id,
+                        "year": album.year,
+                        "genre": album.genre,
                     }
                     for album in (albums if albums is not None else [])
                 ],
@@ -114,8 +216,45 @@ def search_query():
             }
 
 
-@search.route("/artist/<string:id>")
+@search.route("/artist/<string:id>", methods=["GET"])
 def get_artist(id: str):
+    """
+    Get an artist's information by their ID
+    ---
+    tags:
+      - subsonic
+    parameters:
+      - name: id
+        in: path
+        type: string
+        required: true
+        description: The ID of the artist to get
+    responses:
+        200:
+            description: The artist's information
+            content:
+            application/json:
+                schema:
+                type: object
+                properties:
+                    name:
+                    type: string
+                    id:
+                    type: string
+                    albums:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                        title:
+                            type: string
+                        cover:
+                            type: string
+                        id:
+                            type: string
+        404:
+            description: The artist could not be found
+    """
     logger.info(f"Attempting to get artist with id {id}")
     artist = subsonic.get_artist(id)
     if artist is None:
