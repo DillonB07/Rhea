@@ -14,6 +14,10 @@ Rhea is designed to be a virtual assistant that can help with a variety of tasks
 - Play music from Spotify or Navidrome
 - Control micro:bit powered lights
 
+## API Features
+- Music Control
+  - Subsonic
+
 ## Structure
 
 The project is structured as a monorepo to make it easy for me to manage.
@@ -23,3 +27,9 @@ Here's what the folders do:
   user-specific application commands.
 - `slack` - A Slack bot to allow me to interact with the assistant through a Slack bot.
 - `voice` - A voice assistant created with Python that uses natural language to interact with Rhea.
+
+### Credits
+
+Some code has been taken from the following repositories and has been modified to fit Rhea's purpose.
+
+- [kutu-dev/disopy](https://github.com/kutu-dev/disopy)
