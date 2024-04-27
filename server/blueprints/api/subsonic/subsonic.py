@@ -1,15 +1,15 @@
 from flask import Blueprint, abort
 
-from . import subsonic, logger
+from . import subsonic as subsonic_client, logger
 from .play import play as play_blueprint
 from .search import search as search_blueprint
 
-music = Blueprint("music", __name__)
-music.register_blueprint(play_blueprint, url_prefix="/play")
-music.register_blueprint(search_blueprint, url_prefix="/search")
+subsonic = Blueprint("subsonic", __name__)
+subsonic.register_blueprint(play_blueprint, url_prefix="/play")
+subsonic.register_blueprint(search_blueprint, url_prefix="/search")
 
 
-@music.before_request
+@subsonic.before_request
 def before_request():
     """
     Checks if the Subsonic server is reachable before each request
@@ -22,7 +22,7 @@ def before_request():
     """
     try:
         logger.info("Attempting to connect to Subsonic server")
-        if not subsonic.ping():
+        if not subsonic_client.ping():
             logger.warn("Failed to connect to Subsonic server")
             return abort(500, "Failed to connect to Subsonic server")
         else:
@@ -33,7 +33,7 @@ def before_request():
         return abort(503, "Failed to connect to Subsonic server")
 
 
-@music.route("/", methods=["GET"])
+@subsonic.route("/", methods=["GET"])
 def index():
     """
     Checks if the Subsonic server is reachable
@@ -49,7 +49,7 @@ def index():
     return "Connected to Subsonic server"
 
 
-@music.route("/now_playing", methods=["GET"])
+@subsonic.route("/now_playing", methods=["GET"])
 def now_playing():
     """
     Gets the current playing song
@@ -84,7 +84,7 @@ def now_playing():
             description: No song is currently playing
     """
     logger.info("Attempting to get the current playing song")
-    song = subsonic.get_now_playing()
+    song = subsonic_client.get_now_playing()
     if song is None:
         logger.warn("Failed to get the current playing song")
         return abort(404, "No song is currently playing")

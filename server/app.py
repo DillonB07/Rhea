@@ -3,14 +3,14 @@ from threading import Thread
 from flasgger import Swagger
 from flask import Flask
 
-from blueprints.music.music import music as music_blueprint
-from blueprints.music.play import check_queue_and_play
+from blueprints.api import api as api_blueprint
+from blueprints.api.subsonic.play import check_queue_and_play
 
 
 def create_app() -> Flask:
     app = Flask(__name__)
     swagger = Swagger(app)
-    app.register_blueprint(music_blueprint, url_prefix="/music")
+    app.register_blueprint(api_blueprint, url_prefix="/api")
     return app
 
 
