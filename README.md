@@ -14,6 +14,10 @@ Rhea is designed to be a virtual assistant that can help with a variety of tasks
 - Play music from Spotify or Navidrome
 - Control micro:bit powered lights
 
+## API Features
+- Music Control
+  - Subsonic
+
 ## Structure
 
 The project is structured as a monorepo to make it easy for me to manage.
