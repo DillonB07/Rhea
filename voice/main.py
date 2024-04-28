@@ -13,7 +13,6 @@ engine.setProperty("voice", voices[41].id)
 
 KEYWORD_LIST = ["rhea", "ria", "riaa", "riya", "riyaa"]
 
-
 engine.say("Hi! I am Rhea, your virtual assistant!")
 engine.runAndWait()
 
