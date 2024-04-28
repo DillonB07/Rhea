@@ -19,6 +19,7 @@ engine.runAndWait()
 
 
 def take_command():
+    """ """
     r = sr.Recognizer()
     with sr.Microphone() as source:
         print("Listening...")
@@ -41,6 +42,11 @@ def take_command():
 
 
 def process_command(cmd: str):
+    """
+
+    :param cmd: str: 
+
+    """
     engine.say(f"You said {cmd}")
 
 
