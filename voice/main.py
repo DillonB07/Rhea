@@ -4,7 +4,7 @@ import certifi
 import pyttsx3
 import speech_recognition as sr
 
-os.environ['SSL_CERT_FILE'] = certifi.where()
+os.environ["SSL_CERT_FILE"] = certifi.where()
 
 engine = pyttsx3.init()
 voices = engine.getProperty("voices")
