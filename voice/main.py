@@ -44,7 +44,7 @@ def take_command():
 def process_command(cmd: str):
     """
 
-    :param cmd: str: 
+    :param cmd: str:
 
     """
     engine.say(f"You said {cmd}")
