@@ -4,7 +4,7 @@ import certifi
 import pyttsx3
 import speech_recognition as sr
 
-os.environ['SSL_CERT_FILE'] = certifi.where()
+os.environ["SSL_CERT_FILE"] = certifi.where()
 
 engine = pyttsx3.init()
 voices = engine.getProperty("voices")
@@ -13,12 +13,12 @@ engine.setProperty("voice", voices[41].id)
 
 KEYWORD_LIST = ["rhea", "ria", "riaa", "riya", "riyaa"]
 
-
 engine.say("Hi! I am Rhea, your virtual assistant!")
 engine.runAndWait()
 
 
 def take_command():
+    """ """
     r = sr.Recognizer()
     with sr.Microphone() as source:
         print("Listening...")
@@ -41,6 +41,11 @@ def take_command():
 
 
 def process_command(cmd: str):
+    """
+
+    :param cmd: str:
+
+    """
     engine.say(f"You said {cmd}")
 
 
