@@ -6,7 +6,7 @@ from flask import Blueprint, make_response, redirect, request
 
 from utils.config import SPOTIFY_CONFIG
 from utils.security import create_state_key
-from utils.spotify import get_token
+from utils.spotify import get_token, get
 
 project_root = Path(__file__).parent.parent.parent.parent
 data_file_path = project_root / "data.json"
@@ -71,3 +71,23 @@ def callback():
             return "Success"
         else:
             return "Failed to access token", 400
+
+
+@spotify.route("/now_playing", methods=["GET"])
+def now_playing():
+    """
+    Returns the currently playing song.
+    ---
+    tags:
+      - spotify
+    responses:
+        200:
+            description: Returns the currently playing song.
+        400:
+            description: Failed to access token.
+    """
+    res = get("https://api.spotify.com/v1/me/player")
+    if res is not None:
+        return res
+    else:
+        return "Failed to access token", 400
